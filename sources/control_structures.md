@@ -16,8 +16,14 @@ Elixir's version of the if-statement, the if macro, works like this:
     end
 
 The then expression is evaluated when some_condition is trueish, not `false` or
-`nil`. If the else clause isn't given `nil` is returned if the condition isn't
-trueish.
+`nil`. Note that 0 is considered true, not false. To avoid any confusion always
+use tests that return a proper boolean or in where all true values are obviously
+true. For example if you have a value that's either a record or `nil` it's
+idiomatic to say `if val do ... end` because obviously all records are true.
+
+If the else clause isn't given `nil` is returned if the condition isn't
+trueish. Don't write code that depends on this, it's confusing for your readers.
+If you use the value of an if-expression always include the else clause.
 
 The usual macro translation rules apply so the above is equivalent to:
 
@@ -25,6 +31,10 @@ The usual macro translation rules apply so the above is equivalent to:
 
 Written this way the if-macro can be used where you would use a ternary operator
 (`?:`) in C.
+
+Although the 'do-end' and 'do:' form of an if expression are semantically
+identical only use the 'do:' form for relatively simple expressions without
+side effects and always include the 'else:' option/clause.
 
 ## Cond
 
@@ -44,6 +54,9 @@ conditions are evaluated in order.
 If no condition matches an exception is raised. To prevent that put a default
 (or catch-all) clause at the end (`true -> default_expression`).
 
-
-
-
+Although cond is powerful it's best saved for when case just don't cut
+it (remember that you can use guards in the clauses of case). Case often offers
+advantages because of the pattern matching and in any case is more idiomatic
+than cond. Along the same lines a cond with only one non-catch-all condition
+should be replaced by an if as that conveys the intention of the code much
+better.
