@@ -11,7 +11,7 @@ defmodule Build do
 
   def run() do
     # Needs ex_doc ebin dir in the path.
-    File.write!("effective_go.html", Markdown.to_html(read_sources!()))
+    File.write!("effective_elixir.html", Markdown.to_html(read_sources!()))
   end
 
   defp read_sources!() do
