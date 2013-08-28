@@ -148,3 +148,28 @@ advantages because of the pattern matching and in any case is more idiomatic
 than cond. Along the same lines a cond with only one non-catch-all condition
 should be replaced by an if as that conveys the intention of the code much
 better.
+
+## Pipelines (|>)
+
+The `|>` pipeline operator isn't a control structure in the proper sense but
+more of a convenience. It makes writing some expressions easier. Compare:
+
+    Enum.max(Stream.take(Stream.drop(Stream.iterate(1, &(&1 * 2)), 5), 5))
+
+With:
+
+    Stream.iterate(1, &(&1 * 2)) |> Stream.drop(5) |> Stream.take(5) |> Enum.max
+
+The main thing to remember with pipelines is that they are very limited. All the
+`|>` operator does is turn the left argument into the first argument of the
+function call that's its right argument (`x |> f(y, z)` --> `f(x, y, z)`).
+
+While pipelines work great for Elixir functions which are designed to be used
+with them (the first argument is the collection or whatever is the "subject" of
+the function) they often don't work with Erlang functions as many of those put
+the "subject" last. While you could work around this with some rather ugly
+looking code (left as exercise for the reader) you should just assign to normal
+variables. Pipelines are great conveniences, but you shouldn't try to shoehorn
+stuff into them.
+
+
