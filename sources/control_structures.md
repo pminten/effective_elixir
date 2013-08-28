@@ -5,6 +5,94 @@ structures you see in a language like C or Ruby. In particular there is no
 while or for loop. Instead higher order functions such as `Enum.reduce/2` are
 used.
 
+## Case
+
+The most basic form of path choice (do this if, do that if) in Elixir is pattern
+matching. Pattern matching can be done in several ways, such as in the head of a
+function (that terminology comes from Prolog through Erlang and pretty much
+means the bit with the argument list). It's also possible inside a function
+though the case construct. This works just like pattern matching in the function
+head.
+
+Take for example traversing an AST in preorder, here's a head matching version:
+
+    def traverse_ast({l, r}, f) do
+      f.(l)
+      traverse_ast(l, f)
+      f.(r)
+      traverse_ast(l, r)
+    end
+
+    def traverse_ast({_, _, cs} = t, f) do
+      f.(t)
+      traverse_ast(cs, f)
+    end
+
+    def traverse_ast(l, f) when is_list(l) do
+      f.(l)
+      Enum.each(l, &traverse_ast(&1, f))
+    end
+
+    def traverse_ast(x, f) do
+      f.(x)
+    end
+
+And this version uses case:
+
+    def traverse_ast(ast, f) do
+      case ast do
+        {l, r} ->
+          f.(l)
+          traverse_ast(l, f)
+          f.(r)
+          traverse_ast(l, r)
+        {_, _, cs} = t ->
+          f.(t)
+          traverse_ast(cs, f)
+        l when is_list(l) ->
+          f.(l)
+          Enum.each(l, &traverse_ast(&1, f))
+        x ->
+          f.(x)
+      end
+    end
+
+There is no clear rule on where to use head matching and where to use case. Just
+do whatever works best.
+
+Do try to avoid this however:
+
+    fn t -> 
+      case t do
+        {x, y} -> x + y
+        nil    -> 0
+      end
+    end
+
+The fn construct supports multiple heads, so you could say it has a case
+construct built in:
+
+    fn
+        {x, y} -> x + y
+        nil    -> 0
+    end
+
+Whenever you want to choose between different actions or values based on some
+value case (or another form of pattern matching) should be the first thing on
+your mind. There are other options however and if they provide clearer code
+don't be afraid to use them.
+
+In particular don't write:
+
+    case c of
+      true  -> ...
+      _     -> ...
+    end
+
+Use an if expression, which more clearly conveys your intention, unless you
+absolutely need absolute control over which values are considered true (if's
+rule is that anything not false or nil is considered true).
+
 ## If
 
 Elixir's version of the if-statement, the if macro, works like this:
