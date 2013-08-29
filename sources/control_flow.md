@@ -1,9 +1,19 @@
-# Control Structures
+# Control Flow
 
 As Elixir is a functional programming language it doesn't have all the control
 structures you see in a language like C or Ruby. In particular there is no
-while or for loop. Instead higher order functions such as `Enum.reduce/2` are
-used.
+while or for loop. Instead higher order functions such as `Enum.reduce/2` or
+recursive functions are used.
+
+Language features that direct control flow can roughly be divided into two
+categories: choice and repetition. In languages like C and Ruby choice
+corresponds to things like `if` and repetition to `for`. In Elixir the principle
+mechanism for choice is pattern matching and the one for repetition is recursive
+functions.
+
+To make things easier for the programmer Elixir has additional control flow
+features (often implemented as macro's). At the end of the day however those
+boil down to pattern matching and recursive functions.
 
 ## Case
 

@@ -6,7 +6,7 @@ defmodule Build do
   # Chapter names (files without .md) in the order in which they should appear
   # in the docs.
   @chapters [
-    "control_structures"
+    "control_flow"
   ]
 
   def run() do
