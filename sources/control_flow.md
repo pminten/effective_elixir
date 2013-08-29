@@ -15,6 +15,91 @@ To make things easier for the programmer Elixir has additional control flow
 features (often implemented as macro's). At the end of the day however those
 boil down to pattern matching and recursive functions.
 
+## Pattern Matching
+
+Pattern matching can be seen as a very powerful form of equality checking.
+Instead of checking if value A is equal to value B pattern matching allows
+looking into value A to see if it matches some specification. An example is
+probably helpful here. Say you have a tuple and you want to know if the first
+element is `:ok`:
+
+    def is_ok({ :ok, _ }), do: true
+    def is_ok(_),          do: false
+
+If the argument of `is_ok` is a tuple with two values (commonly called a pair)
+for which the first element is `:ok` the body of the first `is_ok` definition is
+executed (causing `true` to be returned). If not, the body of the second `is_ok`
+definition is executed (causing `false` to be returned). The `_` pattern is used
+to indicate that any value will match.
+
+Now say you want to know the value of the second element if the first is `:ok`
+and that if the first value is not `:ok` you want things (in particular the
+current process) to crash. This is actually very common as we shall see in the
+section on error handling.
+
+    { :ok, contents } = File.read(...)
+    IO.puts(contents)
+
+This will print the contents of the file if those could be read. The contents
+variable is set to, or more exactly unified with, the second element of the
+tuple returned by `File.read/2`.
+
+Pattern matching in Elixir is a bit more powerful than we've seen so far. You
+can for example use the same pattern matching variable in multiple spots.
+
+    def eq_first({a, _}, {a, _}), do: true
+    def eq_first(_, _),           do: false
+
+    def eq_first_to(a, b) do
+        case b do
+            {^a, _} -> true
+            _       -> false
+        end
+    end
+
+Here in `eq_first` `true` is only returned if the first element of both pairs
+matches. In `eq_first_to` `true` is only returned if the first element of `b`
+matches `a`. Note the caret (`^`) before `a`, that tells Elixir that it should
+unify (match) with the value of `a` instead of binding `a` to whatever is in
+that spot. In `eq_first` it's not needed because the value isn't obtained from a
+variable.
+
+    def divmod(a, b), do: do_divmod(a, b, 0)
+
+    defp do_divmod(a, b, acc) when a < b, do: { acc, a }
+    defp do_divmod(a, b, acc),            do: do_divmod(a - b, b, acc + 1)
+
+This example shows off guards (`when ...`). Guards are very useful in some
+situations and can be applied in most circumstances where pattern matching is
+used (you can't use it in a `=` expression). While useful guards are
+unfortunately limited, you can only use some functions and some expressions.
+This is a restriction from the underlying Erlang system and sometimes quite
+annoying.
+
+Very roughly the following are allowed in guards:
+
+* Type tests: `is_atom/1`, `is_tuple/1`.
+* Basic properties of values: `hd/1`, `size/1`.
+* Some basic numerical operations: `abs/1`, `trunc/1`.
+* A few functions related to this process: `node/1`, `self/1`.
+* Most operators.
+
+To make the guard restrictions slightly more bearable but somewhat harder to
+reason about it is not uncommon in Elixir to use macros, for example to define a
+list and to check if a value is a member of that list. You can't do that in
+Erlang but in Elixir you can because the `in` operator works like a macro that
+expands to a series of equality tests (`1 in [1,2,3]` --> 
+`1 == 1 || 1 == 2 || 1 == 3`, `1 in 1..3` --> `1 >= 1 and 1 <= 3`).
+
+The last nice feature of pattern matching is the ability to have what you could
+call aliases for parts of a value. This is easier explained in code:
+
+    def tup_and_first({ a, _ } = t), do: { t, a }
+
+If you call `tup_and_first({ 1, 2 })` you will get `{{1, 2}, 1}` returned. You
+can do this even in deeper patterns (`{{a, b} = t1, {c, d} = t2}`). It can come
+in quite handy sometimes.
+
 ## Case
 
 The most basic form of path choice (do this if, do that if) in Elixir is pattern
